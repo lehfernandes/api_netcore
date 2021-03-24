@@ -6,7 +6,14 @@
     <ProjectReference Include="..\Api.CrossCutting\CrossCutting.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.0.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUi" Version="6.0.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.0.7" />
+  </ItemGroup>
+
+
+  <PropertyGroup> 
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 

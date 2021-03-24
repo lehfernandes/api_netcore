@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 
 namespace application
 {
@@ -30,6 +31,19 @@ namespace application
             ConfigureService.ConfigureDependeciesService(services);  
             ConfigureRepository.ConfigureDependeciesRepository(services);                      
             services.AddControllers();
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo 
+                {
+                    Version="v1",
+                    Title="Curso API",
+                    Description="Arquitetura DDD",
+                    Contact=new OpenApiContact
+                    {
+                        Name="Leandro Fernandes",
+                        Email="leandro.fernandes@hotmaill.com"
+                    },
+                }
+            
+            ));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,7 +53,11 @@ namespace application
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
+            app.UseSwagger();
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("swagger/v1/swagger.json", "Curso API");
+                c.RoutePrefix = string.Empty;
+            });
             app.UseRouting();
 
             app.UseAuthorization();

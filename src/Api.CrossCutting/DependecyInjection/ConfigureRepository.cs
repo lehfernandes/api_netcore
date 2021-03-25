@@ -1,4 +1,5 @@
 using Api.Data.Context;
+using Api.Data.Implementations;
 using Api.Data.Repository;
 using Api.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,8 @@ namespace Api.CrossCutting.DependecyInjection
          public static void ConfigureDependeciesRepository(IServiceCollection serviceCollection)
         {
             serviceCollection.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
+            serviceCollection.AddScoped<IUserRepository, UserImplementation>();
+            
             serviceCollection.AddDbContext<MyContext>(
                 opt => opt.UseMySql("Server=localhost;Port=3306;Database=dbAPI;Uid=root;Pwd=123456")
             );

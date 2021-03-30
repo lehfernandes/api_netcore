@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Api.CrossCutting.DependecyInjection;
 using Api.Domain.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
@@ -39,11 +41,34 @@ namespace application
             new ConfigureFromConfigurationOptions<TokenConfigurations>(
                 Configuration.GetSection("TokenConfigurations"))
                     .Configure(tokenConfiguration);
+            services.AddSingleton(tokenConfiguration); 
 
-            services.AddSingleton(tokenConfiguration);            
+            services.AddAuthentication(authOptions => 
+                {
+                    authOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    authOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                }).AddJwtBearer(bearerOptions => 
+                {
+                    var param = bearerOptions.TokenValidationParameters;
+                    param.IssuerSigningKey = signingConfigurations.Key;
+                    param.ValidAudience = tokenConfiguration.Audience;
+                    param.ValidIssuer = tokenConfiguration.Issuer;
+                    param.ValidateIssuerSigningKey = true;
+                    param.ValidateLifetime = true;
+                    param.ClockSkew = TimeSpan.Zero;
+                });
+
+            services.AddAuthorization(auth =>
+                { auth.AddPolicy("Bearer" , new AuthorizationPolicyBuilder()
+                    .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+                    .RequireAuthenticatedUser().Build());
+                });
 
             services.AddControllers();
-            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo 
+
+            services.AddSwaggerGen(c => 
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo 
                 {
                     Version="v1",
                     Title="Curso API",
@@ -53,9 +78,27 @@ namespace application
                         Name="Leandro Fernandes",
                         Email="leandro.fernandes@hotmaill.com"
                     },
-                }
+                });  
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "Insira o Token JWT",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey
+                });  
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement{
+                    {
+                        new OpenApiSecurityScheme{
+                            Reference = new OpenApiReference{
+                                Id = "Bearer",
+                                Type = ReferenceType.SecurityScheme
+                            }
+                        }, new List<string>()
+                    }
+                });           
+            });
             
-            ));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Api.CrossCutting.DependecyInjection;
+using Api.CrossCutting.Mappings;
 using Api.Domain.Security;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
@@ -33,6 +31,17 @@ namespace application
 
             ConfigureService.ConfigureDependeciesService(services);  
             ConfigureRepository.ConfigureDependeciesRepository(services);  
+
+            var config = new AutoMapper.MapperConfiguration(c => 
+            {
+                c.AddProfile(new DtoToModelProfile());
+                c.AddProfile(new EntityToDtoProfile());
+                c.AddProfile(new ModelToEntityProfile());
+
+            });
+
+            IMapper mapper = config.CreateMapper();
+            services.AddSingleton(mapper);
 
             var signingConfigurations = new SigningConfigurations();
             services.AddSingleton(signingConfigurations);
